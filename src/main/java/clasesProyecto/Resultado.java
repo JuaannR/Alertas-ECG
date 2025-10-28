@@ -1,5 +1,7 @@
 package clasesProyecto;
 
+import enums.Enfermedades;
+
 public class Resultado {
 	private Enfermedades enfermedad;
 	private int numCiclos;

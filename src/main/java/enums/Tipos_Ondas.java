@@ -1,4 +1,4 @@
-package clasesProyecto;
+package enums;
 
 public enum Tipos_Ondas {
 	P, Q, R, S, T

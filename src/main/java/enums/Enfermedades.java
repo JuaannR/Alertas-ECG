@@ -1,4 +1,4 @@
-package clasesProyecto;
+package enums;
 
 public enum Enfermedades {	
 	TAQUICARDIA,

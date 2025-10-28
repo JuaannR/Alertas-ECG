@@ -16,11 +16,6 @@ public class EntradaElectro {
 		return Collections.unmodifiableList(listaOndas);
 	}
 
-	/*
-	public void setListaondas(List<Onda> listaondas) {
-		this.listaondas = listaondas;
-	}
-	 */
 	
 	
 	
