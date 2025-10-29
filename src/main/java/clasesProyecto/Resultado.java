@@ -4,10 +4,10 @@ import enums.Enfermedades;
 
 public class Resultado {
 	private Enfermedades enfermedad;
-	private int numCiclos;
-	private int ritmoCardiaco;
+	private float numCiclos;
+	private float ritmoCardiaco;
 	
-	public Resultado(Enfermedades enfermedad, int numCiclos, int ritmoCardiaco) {
+	public Resultado(Enfermedades enfermedad, float numCiclos, float ritmoCardiaco) {
 		super();
 		this.enfermedad = enfermedad;
 		this.numCiclos = numCiclos;
@@ -22,19 +22,19 @@ public class Resultado {
 		this.enfermedad = enfermedad;
 	}
 
-	public int getNumCiclos() {
+	public float getNumCiclos() {
 		return numCiclos;
 	}
 
-	public void setNumCiclos(int numCiclos) {
+	public void setNumCiclos(float numCiclos) {
 		this.numCiclos = numCiclos;
 	}
 
-	public int getRitmoCardiaco() {
+	public float getRitmoCardiaco() {
 		return ritmoCardiaco;
 	}
 
-	public void setRitmoCardiaco(int ritmoCardiaco) {
+	public void setRitmoCardiaco(float ritmoCardiaco) {
 		this.ritmoCardiaco = ritmoCardiaco;
 	}
 	

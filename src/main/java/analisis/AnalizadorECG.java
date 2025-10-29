@@ -17,17 +17,17 @@ public class AnalizadorECG {
 		}
 		
 		// numero de ciclos
-		int numCiclos = ondas.size() / 5;
+		float numCiclos = (float) ondas.size() / 5;
 		
 		// ritmo cardiaco en BMP
-		int inicioPrimeraOnda = ondas.get(0).getInicio();
-		int finUltimaOnda = ondas.get(ondas.size()-1).getFin();
+		float inicioPrimeraOnda = ondas.get(0).getInicio();
+		float finUltimaOnda = ondas.get(ondas.size()-1).getFin();
 		
-		int duracionTotalMs = finUltimaOnda - inicioPrimeraOnda;
+		float duracionTotalMs = finUltimaOnda - inicioPrimeraOnda;
 		
 		float duracionMediaPorCiclo = duracionTotalMs / numCiclos;
 		
-		int ritmoCardiacoBMP = (int) (1000 * 60 / duracionMediaPorCiclo);
+		float ritmoCardiacoBMP =  1000 * 60 / duracionMediaPorCiclo;
 		
 		// Resultado, con enferemedad aun sin diagnosticar
 		Resultado resultado = new Resultado (null, numCiclos, ritmoCardiacoBMP);

@@ -4,35 +4,35 @@ import enums.Tipos_Ondas;
 
 public class Onda {
 	//duracion  -> calcualdo
-	private int fin;
-	private int inicio;
+	private float fin;
+	private float inicio;
 	private float pico;
 	private Tipos_Ondas tipo;
 	
-	public Onda(int fin, int inicio, float pico, Tipos_Ondas tipo) {
+	public Onda(float fin, float inicio, float pico, Tipos_Ondas tipo) {
 		this.fin = fin;
 		this.inicio = inicio;
 		this.pico = pico;
 		this.tipo = tipo;
 	}
 	
-	public int getDuracion() {
+	public float getDuracion() {
 		return fin - inicio;
 	}
 
-	public int getFin() {
+	public float getFin() {
 		return fin;
 	}
 
-	public void setFin(int fin) {
+	public void setFin(float fin) {
 		this.fin = fin;
 	}
 
-	public int getInicio() {
+	public float getInicio() {
 		return inicio;
 	}
 
-	public void setInicio(int inicio) {
+	public void setInicio(float inicio) {
 		this.inicio = inicio;
 	}
 

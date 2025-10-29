@@ -1,0 +1,31 @@
+//created on: 29-oct-2025
+package com.sample.rules
+
+//list any import classes here.
+
+
+import clasesProyecto.Resultado;
+import clasesProyecto.EntradaElectro;
+import clasesProyecto.Onda;
+import enums.Enfermedades;
+import enums.Tipos_Ondas;
+
+//declare any global variables here
+
+
+
+rule "Detectar Taquicardia"
+	when 
+		$r: Resultado ($r.getRitmoCardiaco() > 100) 
+	then
+		System.out.println("Detectada posible taquicardia. Ritmo cardiaco alto: " + $r.getRitmoCardiaco());
+		$r.setEnfermedad(Enfermedades.TAQUICARDIA);
+end
+
+rule "Detectar Bradicardia"
+	when 
+		$r: Resultado ($r.getRitmoCardiaco() < 60)
+	then
+		System.out.println("Detectada posible bradicardia. Ritmo cardiaco bajo: " + $r.getRitmoCardiaco());
+		$r.setEnfermedad(Enfermedades.BRADICARDIA);
+end
