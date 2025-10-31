@@ -9,8 +9,53 @@ import clasesProyecto.EntradaElectro;
 import clasesProyecto.Onda;
 import enums.Enfermedades;
 import enums.Tipos_Ondas;
+import java.util.List;
+import java.util.Comparator;
 
-//declare any global variables here
+
+// regla para calcular número de ciclos 
+//casting necesario a float en numCiclos porque el MathCeil (redondeo hacia arriba) devulve double
+//collect coge todas las ondas existentes y, si es hay alguna onda, crea una lista temporal $ondas con esas ondas
+
+rule "Calcular numCiclos"
+	when
+		$r: Resultado(numCiclos == 0)
+		$ondas: List(size > 0) from collect(Onda())
+	then
+		float numCiclos = (float) Math.ceil($ondas.size() / 5.0f); 
+		modify($r) {
+			setNumCiclos(numCiclos);
+		}
+		System.out.println("Numero de ciclos calculado: " + $r.getNumCiclos());
+end
+
+
+// regla para calcular el ritmo cardiaco
+//casting necesario a List para que deje aplicar getInicio y getFin
+//necesario hacer un sort porque al parecer las Ondas no estan en orden en $ondas
+// (y por tanto tampoco en ondas tras el casting) y salen valores extraños
+
+rule "Calcular ritmoCardiaco"
+	when
+		$r: Resultado(numCiclos > 0, ritmoCardiaco == 0)
+		$ondas: List(size > 0) from collect(Onda());
+	then
+		List<Onda> ondas = (List<Onda>) $ondas;
+		ondas.sort(Comparator.comparing(onda -> onda.getInicio()));
+		float inicioPrimeraOnda = ondas.get(0).getInicio();
+		float finalUltimaOnda = ondas.get(ondas.size() -1).getFin();
+		
+		float duracionTotal = finalUltimaOnda - inicioPrimeraOnda;
+		float duracionMedia = duracionTotal / $r.getNumCiclos();
+		float ritmoCardiaco = 60000.f / duracionMedia;
+		
+		modify ($r) {
+			setRitmoCardiaco(ritmoCardiaco);
+		}
+		
+		System.out.println("Ritmo Cardiaco calculado: " + $r.getRitmoCardiaco());
+end
+
 
 
 

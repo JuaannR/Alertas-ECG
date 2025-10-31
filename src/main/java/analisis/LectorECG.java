@@ -26,15 +26,15 @@ public class LectorECG {
                 	continue; 
                 	}
 
-                Matcher matcher = pattern.matcher(linea);
-                if (matcher.find()) {
+                Matcher matcher = pattern.matcher(linea); //buscador para linea especifica
+                if (matcher.find()) {  //busca patrones en la linea y asigna valores por grupos
                     Tipos_Ondas tipo = Tipos_Ondas.valueOf(matcher.group(1));
-                    int inicio = Integer.parseInt(matcher.group(2));
-                    int fin = Integer.parseInt(matcher.group(3));
+                    float inicio = Float.parseFloat(matcher.group(2));
+                    float fin = Float.parseFloat(matcher.group(3));
                     float pico = Float.parseFloat(matcher.group(4));
 
-                    Onda o = new Onda(fin, inicio, pico, tipo);
-                    ondas.add(o);
+                    Onda o = new Onda(fin, inicio, pico, tipo);  //cada linea pasa a ser una onda
+                    ondas.add(o);								// y se añade a la lista
                 }
             }
         }
@@ -42,3 +42,6 @@ public class LectorECG {
         return new EntradaElectro(ondas);
     }
 }
+
+
+// try with resources -> cierra automaticamente el BufferReader al salir del try y te ahorras el finally

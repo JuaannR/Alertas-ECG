@@ -12,7 +12,7 @@ public class EntradaElectro {
 		this.listaOndas = listaondas;
 	}
 
-	public List<Onda> getListaondas() {
+	public List<Onda> getListaOndas() {
 		return Collections.unmodifiableList(listaOndas);
 	}
 
