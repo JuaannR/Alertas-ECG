@@ -1,0 +1,82 @@
+- Taquicardia:
+Ritmo cardíaco acelerado.
+Ritmo cardiaco superior a 100bmp
+
+
+- Bradicardia:
+Ritmo cardíaco lento.
+Ritmo cardiaco inferior a 60bmp
+
+
+- Hipocalcemia:
+Prolongación del intervalo QT (tiempo de despolarización + repolarización ventricular).
+QT superior a 440 ms en hombres y 460 en mujeres.
+El intervalo QT es superior a 450ms aprox.
+
+
+- Hipopotasemia:
+Alteración de la onda T (aplanada o invertida) por déficit de potasio.
+
+a) Onda T aplanada
+Pico de onda T menor a 0,1 aprox //EN VALOR ABSOLUTO
+|T.pico| < 0,1 mV
+
+b) Relación T/R
+(Pico de onda T / pico onda R) < 0,2 //EN VALOR ABSOLUTO
+|T.pico| / |R.pico| < 0,2 mV
+
+
+
+- Contracción Ventricular Prematura:
+Contracción que ocurre antes de tiempo respecto al ritmo normal y con 
+una morfología ventricular ancha (QRS largo).
+
+a) Prematuridad (R-R corto)
+Calcular promedio de todos los RR 
+Si existe un ciclo RR < 0,8 * promedio de los RR -> PVC
+
+b) QRS ancho
+El intervalo QRS es mayor a 120ms aprox.
+
+
+- Isquemia Coronaria.
+Falta de oxígeno en el músculo cardíaco, sin llegar a necrosis.
+
+a) Depresión del ST
+Diferencia de amplitud entre ST 
+Si (T.pico - S.pico) <= -0,1 -> depresión mayor de 1mm -> Isquemia
+
+b) Onda T invertida
+T.pico negativa
+
+
+
+- Infarto Agudo de Miocardio:
+Necrosis del miocardio (fase aguda).
+
+a) Elevación del ST
+T.pico - S.pico >= +0,5mV
+
+b) Onda T invertida
+T.pico < 0
+
+refuerzo de diagnostico
+
+c) intervalo QRS >= 40 ms
+|Q.pico| > 0,1 mV   
+|Q.pico| / |R.pico| > 0.25
+
+
+CLASES NECESARIAS A CREAR:
+
+Segmento QaT (segmento QRST en verdad) (Hipocalcemia)
+Relación TR (Hipopotasemia)
+Segmento QRS (Contracción Ventricular Prematura)
+Segmento ST (Isquemia Coronaria, Infarto agudo de miocardio)
+Ondas T (Hipopotasemia, Isquemia Coronaria, Infarto agudo de miocardio)
+Ondas R (Contracción Ventricular Prematura)
+
+con refuerzo de diagnostico en infarto agudo de miocardio:
+QRS -> también necesario para infarto
+Ondas Q -> también necesario para infarto
+Ondas R -> también necesario para infarto
