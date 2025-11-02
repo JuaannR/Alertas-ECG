@@ -11,6 +11,7 @@ import enums.Enfermedades;
 import enums.Tipos_Ondas;
 import java.util.List;
 import java.util.Comparator;
+import segmentosOndas.SegmentoQT;
 
 
 // regla para calcular número de ciclos 
@@ -61,16 +62,62 @@ end
 
 rule "Detectar Taquicardia"
 	when 
-		$r: Resultado ($r.getRitmoCardiaco() > 100) 
+		$r: Resultado (ritmoCardiaco > 100 &&
+					   enfermedad == null) 
 	then
+		modify ($r) {
+			setEnfermedad(Enfermedades.TAQUICARDIA);
+		}
 		System.out.println("Detectada posible taquicardia. Ritmo cardiaco alto: " + $r.getRitmoCardiaco());
-		$r.setEnfermedad(Enfermedades.TAQUICARDIA);
 end
+
 
 rule "Detectar Bradicardia"
 	when 
-		$r: Resultado ($r.getRitmoCardiaco() < 60)
+		$r: Resultado (ritmoCardiaco < 60 &&
+				       enfermedad == null)
 	then
+		modify($r) {
+			setEnfermedad(Enfermedades.BRADICARDIA);
+		}
 		System.out.println("Detectada posible bradicardia. Ritmo cardiaco bajo: " + $r.getRitmoCardiaco());
-		$r.setEnfermedad(Enfermedades.BRADICARDIA);
 end
+
+//SUPUESTAMENTE LA DURACION DEL SEGMENTO QT ERA QUE TENIA QUE SER MAYOR A 450, PERO EN  
+//LA MAYORIA DE FICHEROS, ESTE VALOR ES 400, EN LOS DE HIPOCALCMIA 407-408. POR 
+//LO QUE TOMO QUE EL VALOR SEA SUPERIOR A 400 PARA EL CORRECTO DIAGNOSTICO
+rule "Detectar Hipocalcemia"
+	when
+		$r: Resultado (ritmoCardiaco > 0)
+		$segQT: SegmentoQT (listaOndasQT.size > 0)
+	then
+		List<Onda> ondasQT = $segQT.getListaOndasQT();
+		float sumaDuraciones = 0;
+		int ciclos = ondasQT.size() / 4;
+		
+		for (int i = 0; i < ondasQT.size(); i = i + 4) {
+			float inicioQ = ondasQT.get(i).getInicio();
+			float finT = ondasQT.get(i+3).getFin();
+			sumaDuraciones = sumaDuraciones + (finT - inicioQ);
+		}
+		
+		float duracionMedia = sumaDuraciones / ciclos;
+		
+		if(duracionMedia > 400) {
+			modify ($r) {
+			setEnfermedad(Enfermedades.HIPOCALCEMIA);
+			}
+			System.out.println("Detectada posible bradicardia. Duración promedia segmento QT: " + duracionMedia + " ms");
+		}
+end
+
+
+
+
+
+
+
+
+
+
+

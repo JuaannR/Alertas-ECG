@@ -52,6 +52,14 @@ public class Onda {
 		this.tipo = tipo;
 	}
 	
+	@Override
+	public String toString() {
+		return "Onda: {Tipo: " + tipo +
+				", Inicio: " + inicio +
+				", Fin: " + fin +
+				", Pico: " + pico + "}";
+	}
+	
 	
 	
 }
