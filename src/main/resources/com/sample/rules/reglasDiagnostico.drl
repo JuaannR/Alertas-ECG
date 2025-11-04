@@ -12,6 +12,8 @@ import enums.Tipos_Ondas;
 import java.util.List;
 import java.util.Comparator;
 import segmentosOndas.SegmentoQT;
+import segmentosOndas.OndasT;
+import segmentosOndas.RelacionTR;
 
 
 // regla para calcular número de ciclos 
@@ -43,6 +45,16 @@ rule "Calcular ritmoCardiaco"
 	then
 		List<Onda> ondas = (List<Onda>) $ondas;
 		ondas.sort(Comparator.comparing(onda -> onda.getInicio()));
+		
+
+//		int resto = ondas.size() % 4;
+//		
+//		if (resto != 0) {
+//    		for(int i = 0; i < resto; i++) {
+//    			ondas.remove(ondas.size() -1);
+//    		}
+//    	}
+		
 		float inicioPrimeraOnda = ondas.get(0).getInicio();
 		float finalUltimaOnda = ondas.get(ondas.size() -1).getFin();
 		
@@ -86,9 +98,10 @@ end
 //SUPUESTAMENTE LA DURACION DEL SEGMENTO QT ERA QUE TENIA QUE SER MAYOR A 450, PERO EN  
 //LA MAYORIA DE FICHEROS, ESTE VALOR ES 400, EN LOS DE HIPOCALCMIA 407-408. POR 
 //LO QUE TOMO QUE EL VALOR SEA SUPERIOR A 400 PARA EL CORRECTO DIAGNOSTICO
+
 rule "Detectar Hipocalcemia"
 	when
-		$r: Resultado (ritmoCardiaco > 0)
+		$r: Resultado (ritmoCardiaco > 0 && enfermedad == null)
 		$segQT: SegmentoQT (listaOndasQT.size > 0)
 	then
 		List<Onda> ondasQT = $segQT.getListaOndasQT();
@@ -110,6 +123,50 @@ rule "Detectar Hipocalcemia"
 			System.out.println("Detectada posible bradicardia. Duración promedia segmento QT: " + duracionMedia + " ms");
 		}
 end
+
+
+rule "Detectar Hipopotasemia"
+	when
+		$r: Resultado (ritmoCardiaco > 0 && enfermedad == null)
+		$ondasT: OndasT (listaOndasT.size > 0)
+		$relacionTR: RelacionTR (listaRelacionTR.size > 0)
+	then
+		List<Onda> ondasT = $ondasT.getListaOndasT();
+		List<Onda> relacionTR = $relacionTR.getListaRelacionTR();
+		
+		// 1º condicion
+		float sumaPicosT = 0;
+		
+		for (int i = 0; i < ondasT.size(); i++) {
+			float valAbsPico = Math.abs(ondasT.get(i).getPico());
+			sumaPicosT = sumaPicosT + valAbsPico;
+		}
+		float mediaSumaPicosT = sumaPicosT / ondasT.size();
+		
+		// 2º condicion
+		float sumaRelacionesTR = 0;
+		
+		for(int i = 0; i < relacionTR.size(); i = i + 2) {
+			float picoValAbsR = Math.abs(relacionTR.get(i).getPico());
+			float picoValAbsT = Math.abs(relacionTR.get(i+1).getPico());
+			
+			float relTR = picoValAbsT / picoValAbsR;
+			sumaRelacionesTR = sumaRelacionesTR + relTR;
+		}
+		float mediaRelacionesTR = sumaRelacionesTR / (relacionTR.size() / 2);
+		
+		//si ambas condiciones se cumplen, diagnosticamos hipopotasemia
+		
+		if(mediaSumaPicosT < 0.1 || mediaRelacionesTR < 0.2) {
+			modify($r) {
+				setEnfermedad(Enfermedades.HIPOPOTASEMIA);
+			}
+			System.out.println("Detectada posible hipopotasemia");
+			System.out.println("Media Picos T: " + mediaSumaPicosT);
+			System.out.println("Media RelacionTR: " + mediaRelacionesTR); 
+		}
+end
+
 
 
 

@@ -8,6 +8,8 @@ import analisis.LectorECG;
 import clasesProyecto.EntradaElectro;
 import clasesProyecto.Onda;
 import clasesProyecto.Resultado;
+import segmentosOndas.OndasT;
+import segmentosOndas.RelacionTR;
 import segmentosOndas.SegmentoQT;
 
 public class Main {
@@ -16,7 +18,7 @@ public class Main {
 		System.out.println("Hello Wordl!");
 		
 		try {
-			String rutaFichero = "inputs/hipocalcemia_isqcoronaria.txt";
+			String rutaFichero = "inputs/hipopotasemia.txt";
 			
 			// Leer fichero
 			EntradaElectro entrada = LectorECG.leerFichero(rutaFichero);
@@ -24,17 +26,30 @@ public class Main {
 			
 			
 			//CREAR OBJETOS NECESARIOS PARA ANÁLISIS
+			//general
 			Resultado resultado = new Resultado();
+			
+			//hipocalcemia
 			SegmentoQT segmentoQT = new SegmentoQT();
+			
+			//hipopotasemia
+			OndasT ondasT = new OndasT();
+			
+			//hipopotasemia
+			RelacionTR relacionTR = new RelacionTR();
 			
 			//FILTRAMOS SEGMENTOS
 			segmentoQT.filtrarOndasQT(entrada);
+			ondasT.filtrarOndasT(entrada);
+			relacionTR.filtrarRelacionTR(entrada);
 			
-			
-			
+		//////////////////////////////////////////////////////////
+			///////////// PRUEBAS ////////////////////////
+			///////////////////////////////////////////////
+		/*	
 			//PRUEBA HIPOCALCEMIA
 			float sumaDuraciones = 0;
-			int ciclos = segmentoQT.getListaOndasQT().size() / 4;
+			int ciclos = segmentoQT.getListaOndasQT().size() / 4 ;
 			
 			for (int i = 0; i < segmentoQT.getListaOndasQT().size(); i = i + 4) {
 				float inicioQ = segmentoQT.getListaOndasQT().get(i).getInicio();
@@ -54,7 +69,14 @@ public class Main {
 			} else {
 				System.out.println("Menor a 450");
 			}
+	*/		
 			
+			//  PRUEBA FILTRADO DE ONDAS
+		/* */
+
+			
+			 
+			 
 			
 			
 			// Conectar con Drools
@@ -65,6 +87,8 @@ public class Main {
 	        //INSERTAMOS HECHOS (OBJETOS CREADOS UTILIZADOS PARA DIAGNÓSTICO)
 	        kSession.insert(resultado); 
 	        kSession.insert(segmentoQT);
+	        kSession.insert(ondasT);
+	        kSession.insert(relacionTR);
 	        
 	        //Metemos en Drools la lista de ondas de EntradaElectro ONDA A ONDA
 	        for (Onda o : entrada.getListaOndas()) {
