@@ -13,6 +13,7 @@ Prolongación del intervalo QT (tiempo de despolarización + repolarización ven
 QT superior a 440 ms en hombres y 460 en mujeres.
 El intervalo QT es superior a 450ms aprox.
 ----> EN EL PROYECTO HE PUESTO >400
+UNA SEGMENTO QT CON DURACION > 450
 
 
 - Hipopotasemia:
@@ -21,10 +22,16 @@ Alteración de la onda T (aplanada o invertida) por déficit de potasio.
 a) Onda T aplanada
 Pico de onda T menor a 0,1 aprox //EN VALOR ABSOLUTO
 |T.pico| < 0,1 mV
+ONDA T INVERTIDA
 
 b) Relación T/R
 (Pico de onda T / pico onda R) < 0,2 //EN VALOR ABSOLUTO
 |T.pico| / |R.pico| < 0,2 mV
+
+-----> EN EL PROYECTO LAS ONDAS T TIENEN PICO DE -14
+	EN EL PROYECTO LAS ONDAS R TIENEN PICO DE 3
+	IMPOSIBLE QUE EL VALOR SALGA MENOR A 0,ALGO
+	ESTO PARA EL CASO CONCRETO DEL FICHERO DE HIPOPOTASEMIA
 
 
 
@@ -71,9 +78,9 @@ c) intervalo QRS >= 40 ms
 CLASES NECESARIAS A CREAR:
 
 Segmento QaT (segmento QRST en verdad) (Hipocalcemia) OK
+Relación TR (Hipopotasemia)   OK
 
-Relación TR (Hipopotasemia)
-Ondas T (Hipopotasemia, Isquemia Coronaria, Infarto agudo de miocardio)
+Ondas T (Hipopotasemia, Isquemia Coronaria, Infarto agudo de miocardio)  OK HIPOPOTASEMIA
 
 
 

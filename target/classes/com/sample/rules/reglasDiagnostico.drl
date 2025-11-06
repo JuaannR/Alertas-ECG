@@ -10,6 +10,7 @@ import clasesProyecto.Onda;
 import enums.Enfermedades;
 import enums.Tipos_Ondas;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Comparator;
 import segmentosOndas.SegmentoQT;
 import segmentosOndas.OndasT;
@@ -70,6 +71,46 @@ rule "Calcular ritmoCardiaco"
 end
 
 
+rule "Filtrar segmento QT"
+	when
+		$entradaElectro: EntradaElectro(listaOndas.size() > 0)
+		$segmentoQT: SegmentoQT(listaOndasQT.size() == 0)
+	then
+		
+		List<Onda> segmentoQT = new ArrayList<>();
+		List<Onda> todas = $entradaElectro.getListaOndas();
+		
+		System.out.println("lista creadas");
+		
+		todas.stream()
+		.filter( onda ->
+		    onda.getTipo() == Tipos_Ondas.Q ||
+	        onda.getTipo() == Tipos_Ondas.R ||
+	        onda.getTipo() == Tipos_Ondas.S ||
+	        onda.getTipo() == Tipos_Ondas.T
+		)
+		.forEach(onda -> segmentoQT.add(onda));
+		
+		System.out.println("filtrado hehco");
+		
+		int resto = segmentoQT.size() % 4;
+    	
+    	if (resto != 0) {
+    		for(int i = 0; i < resto; i++) {
+    			segmentoQT.remove(segmentoQT.size() -1);
+    		}
+    	}
+    	
+    	System.out.println("stream hecho");
+			
+		modify ($segmentoQT) {
+			setListaOndasQT(segmentoQT);
+		}
+		
+		System.out.println("modify hecho");
+	
+end
+
 
 
 rule "Detectar Taquicardia"
@@ -98,6 +139,8 @@ end
 //SUPUESTAMENTE LA DURACION DEL SEGMENTO QT ERA QUE TENIA QUE SER MAYOR A 450, PERO EN  
 //LA MAYORIA DE FICHEROS, ESTE VALOR ES 400, EN LOS DE HIPOCALCMIA 407-408. POR 
 //LO QUE TOMO QUE EL VALOR SEA SUPERIOR A 400 PARA EL CORRECTO DIAGNOSTICO
+
+/*
 
 rule "Detectar Hipocalcemia"
 	when
@@ -167,7 +210,7 @@ rule "Detectar Hipopotasemia"
 		}
 end
 
-
+*/
 
 
 

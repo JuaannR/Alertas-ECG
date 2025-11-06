@@ -22,7 +22,13 @@ public class SegmentoQT {
     	return Collections.unmodifiableList(ondasQT);
     }
     
+    public void setListaOndasQT(List<Onda> lista) {
+    	for (Onda onda : lista) {
+    		ondasQT.add(onda);
+    	}
+    }
     
+    /*
     public void filtrarOndasQT(EntradaElectro entrada) {
     	List<Onda> todas = entrada.getListaOndas();
     	
@@ -44,7 +50,7 @@ public class SegmentoQT {
     		}
     	}
     }
-    
+    */
     
     
 }

@@ -18,7 +18,7 @@ public class Main {
 		System.out.println("Hello Wordl!");
 		
 		try {
-			String rutaFichero = "inputs/hipopotasemia.txt";
+			String rutaFichero = "inputs/iam.txt";
 			
 			// Leer fichero
 			EntradaElectro entrada = LectorECG.leerFichero(rutaFichero);
@@ -39,44 +39,9 @@ public class Main {
 			RelacionTR relacionTR = new RelacionTR();
 			
 			//FILTRAMOS SEGMENTOS
-			segmentoQT.filtrarOndasQT(entrada);
-			ondasT.filtrarOndasT(entrada);
-			relacionTR.filtrarRelacionTR(entrada);
-			
-		//////////////////////////////////////////////////////////
-			///////////// PRUEBAS ////////////////////////
-			///////////////////////////////////////////////
-		/*	
-			//PRUEBA HIPOCALCEMIA
-			float sumaDuraciones = 0;
-			int ciclos = segmentoQT.getListaOndasQT().size() / 4 ;
-			
-			for (int i = 0; i < segmentoQT.getListaOndasQT().size(); i = i + 4) {
-				float inicioQ = segmentoQT.getListaOndasQT().get(i).getInicio();
-				float finT = segmentoQT.getListaOndasQT().get(i+3).getFin();
-				System.out.println("for: " + sumaDuraciones);
-				sumaDuraciones = sumaDuraciones + (finT - inicioQ);
-				
-			}
-			System.out.println("final: " + sumaDuraciones);
-			System.out.println("ciclos: " + ciclos);
-			float duracionMedia = sumaDuraciones / ciclos;
 			
 			
-			System.out.println("duracion media " + duracionMedia);
-			if (duracionMedia > 450) {
-				System.out.println("Mayor a 450");
-			} else {
-				System.out.println("Menor a 450");
-			}
-	*/		
-			
-			//  PRUEBA FILTRADO DE ONDAS
-		/* */
 
-			
-			 
-			 
 			
 			
 			// Conectar con Drools
@@ -89,6 +54,7 @@ public class Main {
 	        kSession.insert(segmentoQT);
 	        kSession.insert(ondasT);
 	        kSession.insert(relacionTR);
+	        kSession.insert(entrada);
 	        
 	        //Metemos en Drools la lista de ondas de EntradaElectro ONDA A ONDA
 	        for (Onda o : entrada.getListaOndas()) {
@@ -106,7 +72,10 @@ public class Main {
 	           System.out.println("Ritmo Cardiaco: " + resultado.getRitmoCardiaco());
 	           System.out.println("===================================");
 
-			
+	           System.out.println(segmentoQT.getListaOndasQT());
+	           
+	           
+	           
 		} catch (Exception e) {
 	        System.err.println("Error procesando el fichero: " + e.getMessage());
             e.printStackTrace();
