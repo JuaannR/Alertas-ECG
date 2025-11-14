@@ -7,21 +7,55 @@ package com.sample.rules
 import clasesProyecto.Resultado;
 import clasesProyecto.EntradaElectro;
 import clasesProyecto.Onda;
+import clasesProyecto.ContadorCiclos;
 import enums.Enfermedades;
 import enums.Tipos_Ondas;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Comparator;
-import segmentosOndas.SegmentoQT;
-import segmentosOndas.OndasT;
-import segmentosOndas.RelacionTR;
+import clasesProyecto.Intervalo;
 
 
-// regla para calcular número de ciclos 
+//duda
+//a mitad de la lectura pueden haber ciclos incompletos
+//las ondas nos van entrando en orden
+
+
+// regla para calcular nÃºmero de ciclos 
 //casting necesario a float en numCiclos porque el MathCeil (redondeo hacia arriba) devulve double
 //collect coge todas las ondas existentes y, si es hay alguna onda, crea una lista temporal $ondas con esas ondas
 
+rule "Asignar Ciclo en orden"
+    salience 100 
+when
+    $contador: ContadorCiclos($cicloActual: cicloActual)
+    $onda: Onda(ciclo == 0, $inicio: inicio,tipo != Tipos_Ondas.P)
+    not ( Onda(ciclo == 0, inicio < $inicio ))
+then
+    modify($onda) {
+        setCiclo($cicloActual);
+    }
+    //System.out.println("ola");
+    //System.out.println($onda);
+    //System.out.println($cicloActual);
+end
+	
+rule "Si es OndaP aumentar los ciclos"
+	salience 100
+	when
+		$ondaP: Onda(tipo == Tipos_Ondas.P,ciclo == 0, $inicio: inicio)
+		$contador: ContadorCiclos( $cicloActual: cicloActual)
+	then
+		int nuevoCiclo = $cicloActual+1;
+		modify($contador){
+			setCicloActual(nuevoCiclo);
+		}
+		modify($ondaP){
+			setCiclo(nuevoCiclo);
+		}
+end 
 rule "Calcular numCiclos"
+	salience 100
 	when
 		$r: Resultado(numCiclos == 0)
 		$ondas: List(size > 0) from collect(Onda())
@@ -37,9 +71,10 @@ end
 // regla para calcular el ritmo cardiaco
 //casting necesario a List para que deje aplicar getInicio y getFin
 //necesario hacer un sort porque al parecer las Ondas no estan en orden en $ondas
-// (y por tanto tampoco en ondas tras el casting) y salen valores extraños
+// (y por tanto tampoco en ondas tras el casting) y salen valores extraÃ±os
 
 rule "Calcular ritmoCardiaco"
+	salience 100
 	when
 		$r: Resultado(numCiclos > 0, ritmoCardiaco == 0)
 		$ondas: List(size > 0) from collect(Onda());
@@ -70,56 +105,77 @@ rule "Calcular ritmoCardiaco"
 		System.out.println("Ritmo Cardiaco calculado: " + $r.getRitmoCardiaco());
 end
 
-
-rule "Filtrar segmento QT"
-	when
-		$entradaElectro: EntradaElectro(listaOndas.size() > 0)
-		$segmentoQT: SegmentoQT(listaOndasQT.size() == 0)
+rule "Calcular intervalo QT"
+	salience 10
+	when 
+		$ondaQ: Onda(tipo == Tipos_Ondas.Q,$inicioQ: inicio,$ciclo: ciclo)
+		$ondaT: Onda(tipo == Tipos_Ondas.T,ciclo == $ciclo,$finT: fin)
+		//$intervaloQT: Intervalo(tipo == "QT",$cicloInter: ciclo)
+		not(Intervalo(tipo == "QT", ciclo == $ciclo))
 	then
+		float valorQT = $finT - $inicioQ;
 		
-		List<Onda> segmentoQT = new ArrayList<>();
-		List<Onda> todas = $entradaElectro.getListaOndas();
+		insert( new Intervalo("QT", valorQT, $ciclo) );
+		//System.out.println(valorQT + " es la duracion del intervaloQT, del ciclo" + $ciclo);
+end
+
+rule "Calcular intervalo ST"
+	salience 10
+	when 
+		$ondaS: Onda(tipo == Tipos_Ondas.S,$inicioS: inicio,$ciclo: ciclo, $picoS: pico)
+		$ondaT: Onda(tipo == Tipos_Ondas.T,ciclo == $ciclo,$finT: fin, $picoT: pico)
+		//$intervaloQT: Intervalo(tipo == "ST",$cicloInter: ciclo)
+		not(Intervalo(tipo == "ST", ciclo == $ciclo))
+	then
+		float valorST = $finT - $inicioS;
+		float picoST = $picoT - $picoS;
 		
-		System.out.println("lista creadas");
+		insert( new Intervalo("ST", valorST, $ciclo) );
+		//System.out.println(valorST + " es la duracion del intervaloST, del ciclo" + $ciclo);
+		//System.out.println(picoST + " es pico del intervaloST, del ciclo" + $ciclo);
+end
+
+rule "Calcular complejo QRS"
+	salience 10
+	when 
+		$ondaQ: Onda(tipo == Tipos_Ondas.Q,$ciclo: ciclo,$inicioQ: inicio)
+		$ondaS: Onda(tipo == Tipos_Ondas.S,ciclo == $ciclo,$finS: fin)
+		//$intervaloQRS: Intervalo( tipo == "QRS",$cicloInter: ciclo)
+		not(Intervalo(tipo == "QRS", ciclo == $ciclo))
+	then
+		float valorQRS = $finS - $inicioQ;
 		
-		todas.stream()
-		.filter( onda ->
-		    onda.getTipo() == Tipos_Ondas.Q ||
-	        onda.getTipo() == Tipos_Ondas.R ||
-	        onda.getTipo() == Tipos_Ondas.S ||
-	        onda.getTipo() == Tipos_Ondas.T
-		)
-		.forEach(onda -> segmentoQT.add(onda));
-		
-		System.out.println("filtrado hehco");
-		
-		int resto = segmentoQT.size() % 4;
-    	
-    	if (resto != 0) {
-    		for(int i = 0; i < resto; i++) {
-    			segmentoQT.remove(segmentoQT.size() -1);
-    		}
-    	}
-    	
-    	System.out.println("stream hecho");
-			
-		modify ($segmentoQT) {
-			setListaOndasQT(segmentoQT);
-		}
-		
-		System.out.println("modify hecho");
-	
+		insert( new Intervalo("QRS", valorQRS, $ciclo) );
+		//System.out.println(valorQRS + " es la duracion del intervaloQRS, del ciclo" + $ciclo);
 end
 
 
+rule "Calcular intervalo RR"
+	salience 10
+	when 
+		$ondaR1: Onda(tipo == Tipos_Ondas.R,$inicioR1: inicio,$cicloR1: ciclo)
+		$ondaR2: Onda(tipo == Tipos_Ondas.R,$inicioR2: inicio,ciclo == $cicloR1+1)
+		not Intervalo(tipo == "RR", ciclo == $cicloR1)
+	then
+		//System.out.println("fin: " + $finalR2 + "inicio: " + $inicioR1);
+		float valorRR = $inicioR2 - $inicioR1;
+		
+		insert( new Intervalo("RR", valorRR, $cicloR1) );
+		//System.out.println(valorRR + " es la duracion del intervaloRR, del ciclo" + $cicloR1);
+end
 
+//
+//
+//				ENFERMEDADES
+//
+//
+		
 rule "Detectar Taquicardia"
 	when 
-		$r: Resultado (ritmoCardiaco > 100 &&
-					   enfermedad == null) 
+		$r: Resultado (ritmoCardiaco > 100 && !enfermedad.contains(Enfermedades.TAQUICARDIA)) 
 	then
 		modify ($r) {
-			setEnfermedad(Enfermedades.TAQUICARDIA);
+			addEnfermedad(Enfermedades.TAQUICARDIA);
 		}
 		System.out.println("Detectada posible taquicardia. Ritmo cardiaco alto: " + $r.getRitmoCardiaco());
 end
@@ -127,96 +183,83 @@ end
 
 rule "Detectar Bradicardia"
 	when 
-		$r: Resultado (ritmoCardiaco < 60 &&
-				       enfermedad == null)
+		$r: Resultado (ritmoCardiaco < 60 && !enfermedad.contains(Enfermedades.BRADICARDIA))
 	then
 		modify($r) {
-			setEnfermedad(Enfermedades.BRADICARDIA);
+			addEnfermedad(Enfermedades.BRADICARDIA);
 		}
 		System.out.println("Detectada posible bradicardia. Ritmo cardiaco bajo: " + $r.getRitmoCardiaco());
 end
 
-//SUPUESTAMENTE LA DURACION DEL SEGMENTO QT ERA QUE TENIA QUE SER MAYOR A 450, PERO EN  
-//LA MAYORIA DE FICHEROS, ESTE VALOR ES 400, EN LOS DE HIPOCALCMIA 407-408. POR 
-//LO QUE TOMO QUE EL VALOR SEA SUPERIOR A 400 PARA EL CORRECTO DIAGNOSTICO
-
-/*
-
 rule "Detectar Hipocalcemia"
 	when
-		$r: Resultado (ritmoCardiaco > 0 && enfermedad == null)
-		$segQT: SegmentoQT (listaOndasQT.size > 0)
+	$r: Resultado (ritmoCardiaco > 0 && !enfermedad.contains(Enfermedades.HIPOCALCEMIA))
+	$intervaloQT: Intervalo(tipo == "QT",duracion>450)
 	then
-		List<Onda> ondasQT = $segQT.getListaOndasQT();
-		float sumaDuraciones = 0;
-		int ciclos = ondasQT.size() / 4;
-		
-		for (int i = 0; i < ondasQT.size(); i = i + 4) {
-			float inicioQ = ondasQT.get(i).getInicio();
-			float finT = ondasQT.get(i+3).getFin();
-			sumaDuraciones = sumaDuraciones + (finT - inicioQ);
-		}
-		
-		float duracionMedia = sumaDuraciones / ciclos;
-		
-		if(duracionMedia > 400) {
-			modify ($r) {
-			setEnfermedad(Enfermedades.HIPOCALCEMIA);
+	
+	modify ($r) {
+			addEnfermedad(Enfermedades.HIPOCALCEMIA);
 			}
-			System.out.println("Detectada posible bradicardia. Duración promedia segmento QT: " + duracionMedia + " ms");
-		}
+	System.out.println("Detectada posible Hipocalcemia en el ciclo: " + $intervaloQT.getCiclo());	
 end
-
 
 rule "Detectar Hipopotasemia"
 	when
-		$r: Resultado (ritmoCardiaco > 0 && enfermedad == null)
-		$ondasT: OndasT (listaOndasT.size > 0)
-		$relacionTR: RelacionTR (listaRelacionTR.size > 0)
+		$r: Resultado (ritmoCardiaco > 0 && !enfermedad.contains(Enfermedades.HIPOPOTASEMIA))
+	    $ondaT: Onda( tipo == Tipos_Ondas.T, $picoT: pico, $ciclo: ciclo )
+	    $ondaR: Onda( tipo == Tipos_Ondas.R,ciclo == $ciclo,$picoR: pico)
+	    eval( $picoT < 0.1 || (Math.abs($picoT / $picoR) < 0.2) )
 	then
-		List<Onda> ondasT = $ondasT.getListaOndasT();
-		List<Onda> relacionTR = $relacionTR.getListaRelacionTR();
-		
-		// 1º condicion
-		float sumaPicosT = 0;
-		
-		for (int i = 0; i < ondasT.size(); i++) {
-			float valAbsPico = Math.abs(ondasT.get(i).getPico());
-			sumaPicosT = sumaPicosT + valAbsPico;
-		}
-		float mediaSumaPicosT = sumaPicosT / ondasT.size();
-		
-		// 2º condicion
-		float sumaRelacionesTR = 0;
-		
-		for(int i = 0; i < relacionTR.size(); i = i + 2) {
-			float picoValAbsR = Math.abs(relacionTR.get(i).getPico());
-			float picoValAbsT = Math.abs(relacionTR.get(i+1).getPico());
-			
-			float relTR = picoValAbsT / picoValAbsR;
-			sumaRelacionesTR = sumaRelacionesTR + relTR;
-		}
-		float mediaRelacionesTR = sumaRelacionesTR / (relacionTR.size() / 2);
-		
-		//si ambas condiciones se cumplen, diagnosticamos hipopotasemia
-		
-		if(mediaSumaPicosT < 0.1 || mediaRelacionesTR < 0.2) {
-			modify($r) {
-				setEnfermedad(Enfermedades.HIPOPOTASEMIA);
+	
+	modify ($r) {
+			addEnfermedad(Enfermedades.HIPOPOTASEMIA);
 			}
-			System.out.println("Detectada posible hipopotasemia");
-			System.out.println("Media Picos T: " + mediaSumaPicosT);
-			System.out.println("Media RelacionTR: " + mediaRelacionesTR); 
-		}
+	System.out.println("Detectada posible Hipopotasemia en el ciclo: " + $ondaT.getCiclo());	
 end
 
-*/
+rule "Detectar ContracciÃ³n Ventricular Prematura"
+	when
+		$r: Resultado (ritmoCardiaco > 0 && !enfermedad.contains(Enfermedades.CONTRACCION_VENTRICULAR_PREMATURA))
+		$intervaloQRS: Intervalo(tipo == "QRS",$cicloQRS: ciclo,$valorQRS: duracion)
+		$intervaloRR: Intervalo(tipo == "RR", $cicloQRS == ciclo,$valorRR: duracion)
+		eval($valorQRS > 120 || $valorRR > 0.8*690)
+	then
+	
+		modify ($r) {
+				addEnfermedad(Enfermedades.CONTRACCION_VENTRICULAR_PREMATURA);
+				}
+		System.out.println("Detectada posible CONTRACCION_VENTRICULAR_PREMATURA en el ciclo: " + $intervaloQRS.getCiclo());	
+end
 
+rule "Detectar Isquemia Coronaria"
+	when
+		$r: Resultado (ritmoCardiaco > 0 && !enfermedad.contains(Enfermedades.ISQUEMIA_CORONARIA))
+		$ondaS: Onda(tipo == Tipos_Ondas.S, $ciclo: ciclo, $picoS: pico)
+		$ondaT: Onda(tipo == Tipos_Ondas.T, ciclo == $ciclo, $picoT: pico)
+		eval ((($picoT - $picoS) <= -0.1) || $picoT < 0)
+	then
+		modify ($r) {
+				addEnfermedad(Enfermedades.ISQUEMIA_CORONARIA);
+				}
+		System.out.println("Detectada posible ISQUEMIA_CORONARIA en el ciclo: " + $ciclo);
+end
 
-
-
-
-
+rule "Detectar Infarto Agudo de Miocardio"
+	//salience 5
+	when
+		$r: Resultado (ritmoCardiaco > 0 && !enfermedad.contains(Enfermedades.INFARTO_AGUDO_DE_MIOCARDIO))
+		$ondaS: Onda(tipo == Tipos_Ondas.S, $ciclo: ciclo, $picoS: pico)
+		$ondaT: Onda(tipo == Tipos_Ondas.T, ciclo == $ciclo, $picoT: pico)
+		$intervaloQRS: Intervalo(tipo == "QRS",ciclo == $ciclo, $duracion: duracion)
+		$ondaQ: Onda(tipo == Tipos_Ondas.Q, ciclo == $ciclo, $picoQ: pico)
+		$ondaR: Onda(tipo == Tipos_Ondas.R, ciclo == $ciclo, $picoR: pico)
+		eval ((($picoT - $picoS) >= 0.5) || $picoT < 0 || $duracion >= 40 || $picoQ > 0.1 || ($picoQ/$picoR) > 0.25)
+	then
+		modify ($r) {
+				addEnfermedad(Enfermedades.INFARTO_AGUDO_DE_MIOCARDIO);
+				}
+		System.out.println("Detectada posible INFARTO_AGUDO_DE_MIOCARDIO en el ciclo: " + $ciclo);
+end
 
 
 

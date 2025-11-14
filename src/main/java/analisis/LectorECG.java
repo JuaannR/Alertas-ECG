@@ -12,7 +12,7 @@ public class LectorECG {
 
     public static EntradaElectro leerFichero(String rutaFichero) throws IOException {
         List<Onda> ondas = new ArrayList<>();  //Lista vacia
-
+        int cont = 0;
         // Patrón expresion regular
         Pattern pattern = Pattern.compile("([PQRST])\\((\\d+),(\\d+),(-?\\d+\\.?\\d*)\\)");
 
@@ -33,8 +33,9 @@ public class LectorECG {
                     float fin = Float.parseFloat(matcher.group(3));
                     float pico = Float.parseFloat(matcher.group(4));
 
-                    Onda o = new Onda(fin, inicio, pico, tipo);  //cada linea pasa a ser una onda
+                    Onda o = new Onda(fin, inicio, pico, tipo,cont);  //cada linea pasa a ser una onda
                     ondas.add(o);								// y se añade a la lista
+                    
                 }
             }
         }

@@ -5,12 +5,11 @@ import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 
 import analisis.LectorECG;
+import clasesProyecto.ContadorCiclos;
 import clasesProyecto.EntradaElectro;
+import clasesProyecto.Intervalo;
 import clasesProyecto.Onda;
 import clasesProyecto.Resultado;
-import segmentosOndas.OndasT;
-import segmentosOndas.RelacionTR;
-import segmentosOndas.SegmentoQT;
 
 public class Main {
 
@@ -18,7 +17,7 @@ public class Main {
 		System.out.println("Hello Wordl!");
 		
 		try {
-			String rutaFichero = "inputs/iam.txt";
+			String rutaFichero = "inputs/hipocalcemia_iam.txt";
 			
 			// Leer fichero
 			EntradaElectro entrada = LectorECG.leerFichero(rutaFichero);
@@ -30,16 +29,13 @@ public class Main {
 			Resultado resultado = new Resultado();
 			
 			//hipocalcemia
-			SegmentoQT segmentoQT = new SegmentoQT();
+			Intervalo intervalo = new Intervalo();
 			
-			//hipopotasemia
-			OndasT ondasT = new OndasT();
 			
-			//hipopotasemia
-			RelacionTR relacionTR = new RelacionTR();
+
 			
 			//FILTRAMOS SEGMENTOS
-			
+			ContadorCiclos contCiclos = new ContadorCiclos();
 			
 
 			
@@ -51,10 +47,9 @@ public class Main {
 	        
 	        //INSERTAMOS HECHOS (OBJETOS CREADOS UTILIZADOS PARA DIAGNÓSTICO)
 	        kSession.insert(resultado); 
-	        kSession.insert(segmentoQT);
-	        kSession.insert(ondasT);
-	        kSession.insert(relacionTR);
+	        kSession.insert(intervalo);
 	        kSession.insert(entrada);
+	        kSession.insert(contCiclos);
 	        
 	        //Metemos en Drools la lista de ondas de EntradaElectro ONDA A ONDA
 	        for (Onda o : entrada.getListaOndas()) {
@@ -72,7 +67,7 @@ public class Main {
 	           System.out.println("Ritmo Cardiaco: " + resultado.getRitmoCardiaco());
 	           System.out.println("===================================");
 
-	           System.out.println(segmentoQT.getListaOndasQT());
+	           //System.out.println(segmentoQT.getListaOndasQT());
 	           
 	           
 	           

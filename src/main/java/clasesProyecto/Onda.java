@@ -8,12 +8,14 @@ public class Onda {
 	private float inicio;
 	private float pico;
 	private Tipos_Ondas tipo;
+	private int ciclo;
 	
-	public Onda(float fin, float inicio, float pico, Tipos_Ondas tipo) {
+	public Onda(float fin, float inicio, float pico, Tipos_Ondas tipo,int ciclo) {
 		this.fin = fin;
 		this.inicio = inicio;
 		this.pico = pico;
 		this.tipo = tipo;
+		this.ciclo = ciclo;
 	}
 	
 	public float getDuracion() {
@@ -52,6 +54,14 @@ public class Onda {
 		this.tipo = tipo;
 	}
 	
+	public int getCiclo() {
+		return ciclo;
+	}
+
+	public void setCiclo(int ciclo) {
+		this.ciclo = ciclo;
+	}
+
 	@Override
 	public String toString() {
 		return "Onda: {Tipo: " + tipo +
