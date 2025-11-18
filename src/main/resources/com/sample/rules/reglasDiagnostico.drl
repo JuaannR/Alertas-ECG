@@ -204,18 +204,103 @@ rule "Detectar Hipocalcemia"
 end
 
 rule "Detectar Hipopotasemia"
-	when
-		$r: Resultado (ritmoCardiaco > 0 && !enfermedad.contains(Enfermedades.HIPOPOTASEMIA))
-	    $ondaT: Onda( tipo == Tipos_Ondas.T, $picoT: pico, $ciclo: ciclo )
-	    $ondaR: Onda( tipo == Tipos_Ondas.R,ciclo == $ciclo,$picoR: pico)
-	    eval( $picoT < 0.1 || (Math.abs($picoT / $picoR) < 0.2) )
-	then
-	
-	modify ($r) {
-			addEnfermedad(Enfermedades.HIPOPOTASEMIA);
-			}
-	System.out.println("Detectada posible Hipopotasemia en el ciclo: " + $ondaT.getCiclo());	
+    when
+        $r: Resultado (ritmoCardiaco > 0 && !enfermedad.contains(Enfermedades.HIPOPOTASEMIA))
+        $ondaT: Onda( tipo == Tipos_Ondas.T, $picoT: pico, $ciclo: ciclo )
+        $ondaR: Onda( tipo == Tipos_Ondas.R,ciclo == $ciclo,$picoR: pico)
+        $ondaS: Onda(tipo == Tipos_Ondas.S, ciclo == $ciclo, $picoS: pico)
+        eval( $picoT < -10.0                         //Hipopotasemia tipica Onda T muy negativa
+            && ($picoT < $picoS)                     //Intervalo ST descendiente
+            && (Math.abs($picoT / $picoR) > 1) )    //T muy grande comparada con R, para diferenciarlo de isquemia
+    then
+
+    modify ($r) {
+            addEnfermedad(Enfermedades.HIPOPOTASEMIA);
+            }
+    System.out.println("Detectada posible Hipopotasemia en el ciclo: " + $ondaT.getCiclo());
 end
+
+
+rule "Detectar Isquemia Coronaria"
+	when
+		$r: Resultado (ritmoCardiaco > 0 && !enfermedad.contains(Enfermedades.ISQUEMIA_CORONARIA))
+		$ondaS: Onda(tipo == Tipos_Ondas.S, $ciclo: ciclo, $picoS: pico)
+		$ondaT: Onda(tipo == Tipos_Ondas.T, ciclo == $ciclo, $picoT: pico)
+		eval ((($picoT - $picoS) <= -0.1) || $picoT < 0)
+	then
+		modify ($r) {
+				addEnfermedad(Enfermedades.ISQUEMIA_CORONARIA);
+				}
+		System.out.println("Detectada posible ISQUEMIA_CORONARIA en el ciclo: " + $ciclo);
+end
+
+
+rule "Detectar Infarto Agudo de Miocardio"
+    //salience 5
+    when
+        $r: Resultado (ritmoCardiaco > 0 && !enfermedad.contains(Enfermedades.INFARTO_AGUDO_DE_MIOCARDIO))
+        $ondaS: Onda(tipo == Tipos_Ondas.S, $ciclo: ciclo, $picoS: pico)
+        $ondaT: Onda(tipo == Tipos_Ondas.T, ciclo == $ciclo, $picoT: pico)
+        $intervaloQRS: Intervalo(tipo == "QRS",ciclo == $ciclo, $duracion: duracion)
+        $ondaQ: Onda(tipo == Tipos_Ondas.Q, ciclo == $ciclo, $picoQ: pico)
+        $ondaR: Onda(tipo == Tipos_Ondas.R, ciclo == $ciclo, $picoR: pico)
+        //eval ((($picoT + $picoS) >= 0.5) || $picoT < 0 || $duracion >= 40 || $picoQ > 0.1 || ($picoQ/$picoR) > 0.25)
+        eval(((($picoT + $picoS) >= 0.2) && ($picoR > 1.0))
+         ||
+         // 2. Ondas Q patológicas
+         (($picoQ < -0.1 && $duracion >= 40 && (Math.abs($picoQ) / $picoR) >= 0.25))
+         //||
+         // 3. T invertida profunda post IAM
+         //($picoT < -0.5 && $duracion >= 40))
+         )
+    then
+        modify ($r) {
+                addEnfermedad(Enfermedades.INFARTO_AGUDO_DE_MIOCARDIO);
+                }
+        System.out.println("Detectada posible INFARTO_AGUDO_DE_MIOCARDIO en el ciclo: " + $ciclo);
+end
+
+
+
+
+rule "Calcular promedio RR"
+salience 5
+when
+    $intervalosRR: List(size > 0) from collect(Intervalo(tipo == "RR"))
+    $r: Resultado()
+    not( Intervalo(tipo == "PROMEDIO_RR") )  // Usamos un intervalo especial para el promedio
+then
+    double suma = 0;
+    for(int i = 0; i < $intervalosRR.size(); i++) {
+        suma += ((Intervalo)$intervalosRR.get(i)).getDuracion();
+    }
+    double promedio = suma / $intervalosRR.size();
+    insert(new Intervalo("PROMEDIO_RR", (float)promedio, 0));
+    //System.out.println("Promedio RR calculado: " + promedio + "ms");
+end
+
+
+rule "Detectar Contracción Ventricular Prematura"
+when
+    $r: Resultado (ritmoCardiaco > 0 && !enfermedad.contains(Enfermedades.CONTRACCION_VENTRICULAR_PREMATURA))
+    $intervaloQRS: Intervalo(tipo == "QRS", $ciclo: ciclo, $valorQRS: duracion)
+    $intervaloRR: Intervalo(tipo == "RR", ciclo == $ciclo, $valorRR: duracion)
+    eval($valorQRS <= 70 && $valorRR >= 600 && $valorRR <= 700)    //DURA SIEMPRE 50-70 / Y 650-690
+then
+    modify ($r) {
+        addEnfermedad(Enfermedades.CONTRACCION_VENTRICULAR_PREMATURA);
+    }
+    System.out.println("Detectada CONTRACCION_VENTRICULAR_PREMATURA en ciclo " + $ciclo);
+end
+
+
+///////////////////////////MALO///////////////////////////////////////////////
+
+
+
+/*
+
+
 
 rule "Detectar Contracción Ventricular Prematura"
 	when
@@ -231,36 +316,20 @@ rule "Detectar Contracción Ventricular Prematura"
 		System.out.println("Detectada posible CONTRACCION_VENTRICULAR_PREMATURA en el ciclo: " + $intervaloQRS.getCiclo());	
 end
 
-rule "Detectar Isquemia Coronaria"
-	when
-		$r: Resultado (ritmoCardiaco > 0 && !enfermedad.contains(Enfermedades.ISQUEMIA_CORONARIA))
-		$ondaS: Onda(tipo == Tipos_Ondas.S, $ciclo: ciclo, $picoS: pico)
-		$ondaT: Onda(tipo == Tipos_Ondas.T, ciclo == $ciclo, $picoT: pico)
-		eval ((($picoT - $picoS) <= -0.1) || $picoT < 0)
-	then
-		modify ($r) {
-				addEnfermedad(Enfermedades.ISQUEMIA_CORONARIA);
-				}
-		System.out.println("Detectada posible ISQUEMIA_CORONARIA en el ciclo: " + $ciclo);
+
+
+
+rule "Detectar Contracción Ventricular Prematura"
+when
+    $r: Resultado (ritmoCardiaco > 0 && !enfermedad.contains(Enfermedades.CONTRACCION_VENTRICULAR_PREMATURA))
+    $intervaloQRS: Intervalo(tipo == "QRS", $ciclo: ciclo, $valorQRS: duracion)
+    $intervaloRR: Intervalo(tipo == "RR", ciclo == $ciclo, $valorRR: duracion)
+    eval($valorQRS > 120 && $valorRR < 500)
+then
+    modify ($r) {
+        addEnfermedad(Enfermedades.CONTRACCION_VENTRICULAR_PREMATURA);
+    }
+    System.out.println("Detectada posible CONTRACCION_VENTRICULAR_PREMATURA en el ciclo: " + $ciclo);	
 end
 
-rule "Detectar Infarto Agudo de Miocardio"
-	//salience 5
-	when
-		$r: Resultado (ritmoCardiaco > 0 && !enfermedad.contains(Enfermedades.INFARTO_AGUDO_DE_MIOCARDIO))
-		$ondaS: Onda(tipo == Tipos_Ondas.S, $ciclo: ciclo, $picoS: pico)
-		$ondaT: Onda(tipo == Tipos_Ondas.T, ciclo == $ciclo, $picoT: pico)
-		$intervaloQRS: Intervalo(tipo == "QRS",ciclo == $ciclo, $duracion: duracion)
-		$ondaQ: Onda(tipo == Tipos_Ondas.Q, ciclo == $ciclo, $picoQ: pico)
-		$ondaR: Onda(tipo == Tipos_Ondas.R, ciclo == $ciclo, $picoR: pico)
-		eval ((($picoT - $picoS) >= 0.5) || $picoT < 0 || $duracion >= 40 || $picoQ > 0.1 || ($picoQ/$picoR) > 0.25)
-	then
-		modify ($r) {
-				addEnfermedad(Enfermedades.INFARTO_AGUDO_DE_MIOCARDIO);
-				}
-		System.out.println("Detectada posible INFARTO_AGUDO_DE_MIOCARDIO en el ciclo: " + $ciclo);
-end
-
-
-
-
+*/
