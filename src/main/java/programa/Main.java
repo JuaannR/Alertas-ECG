@@ -29,9 +29,9 @@ public class Main {
 			//String rutaFichero = "inputs/normal.txt";
 			//String rutaFichero = "inputs/normal2.txt";
 			//String rutaFichero = "inputs/premat-vent-contr1.txt";
-			String rutaFichero = "inputs/premat-vent-contr2.txt";
+			//String rutaFichero = "inputs/premat-vent-contr2.txt";
 			//String rutaFichero = "inputs/taquicardia.txt";
-			//String rutaFichero = "inputs/taquicardia2.txt";
+			String rutaFichero = "inputs/taquicardia2.txt";
 			
 			// Leer fichero
 			EntradaElectro entrada = LectorECG.leerFichero(rutaFichero);

@@ -222,16 +222,19 @@ end
 
 
 rule "Detectar Isquemia Coronaria"
-	when
-		$r: Resultado (ritmoCardiaco > 0 && !enfermedad.contains(Enfermedades.ISQUEMIA_CORONARIA))
-		$ondaS: Onda(tipo == Tipos_Ondas.S, $ciclo: ciclo, $picoS: pico)
-		$ondaT: Onda(tipo == Tipos_Ondas.T, ciclo == $ciclo, $picoT: pico)
-		eval ((($picoT - $picoS) <= -0.1) || $picoT < 0)
-	then
-		modify ($r) {
-				addEnfermedad(Enfermedades.ISQUEMIA_CORONARIA);
-				}
-		System.out.println("Detectada posible ISQUEMIA_CORONARIA en el ciclo: " + $ciclo);
+    when
+        $r: Resultado (ritmoCardiaco > 0 && !enfermedad.contains(Enfermedades.ISQUEMIA_CORONARIA))
+        $ondaS: Onda(tipo == Tipos_Ondas.S, $ciclo: ciclo, $picoS: pico)
+        $ondaT: Onda(tipo == Tipos_Ondas.T, ciclo == $ciclo, $picoT: pico)
+        //$ondaR: Onda(tipo == Tipos_Ondas.R, ciclo == $ciclo, $picoR: pico)
+        eval (($picoT - $picoS) <= -5            //Haya desnivelacion
+                //&& ($picoT - $picoR) <= -5.0    //hacemos una desnivelacion de R a T, pero creo que podria hacerse con S y T
+                && !($picoT < -10))                //Que el pico T no sea demasiado bajo
+    then
+        modify ($r) {
+                addEnfermedad(Enfermedades.ISQUEMIA_CORONARIA);
+                }
+        System.out.println("Detectada posible ISQUEMIA_CORONARIA en el ciclo: " + $ciclo);
 end
 
 
