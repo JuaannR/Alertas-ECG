@@ -54,6 +54,8 @@ rule "Si es OndaP aumentar los ciclos"
 			setCiclo(nuevoCiclo);
 		}
 end 
+
+
 rule "Calcular numCiclos"
 	salience 100
 	when
@@ -83,13 +85,13 @@ rule "Calcular ritmoCardiaco"
 		ondas.sort(Comparator.comparing(onda -> onda.getInicio()));
 		
 
-//		int resto = ondas.size() % 4;
-//		
-//		if (resto != 0) {
-//    		for(int i = 0; i < resto; i++) {
-//    			ondas.remove(ondas.size() -1);
-//    		}
-//    	}
+		int resto = ondas.size() % 4;
+		
+		if (resto != 0) {
+    		for(int i = 0; i < resto; i++) {
+    			ondas.remove(ondas.size() -1);
+    		}
+    	}
 		
 		float inicioPrimeraOnda = ondas.get(0).getInicio();
 		float finalUltimaOnda = ondas.get(ondas.size() -1).getFin();
@@ -297,42 +299,3 @@ then
 end
 
 
-///////////////////////////MALO///////////////////////////////////////////////
-
-
-
-/*
-
-
-
-rule "Detectar Contracción Ventricular Prematura"
-	when
-		$r: Resultado (ritmoCardiaco > 0 && !enfermedad.contains(Enfermedades.CONTRACCION_VENTRICULAR_PREMATURA))
-		$intervaloQRS: Intervalo(tipo == "QRS",$cicloQRS: ciclo,$valorQRS: duracion)
-		$intervaloRR: Intervalo(tipo == "RR", $cicloQRS == ciclo,$valorRR: duracion)
-		eval($valorQRS > 120 || $valorRR > 0.8*690)
-	then
-	
-		modify ($r) {
-				addEnfermedad(Enfermedades.CONTRACCION_VENTRICULAR_PREMATURA);
-				}
-		System.out.println("Detectada posible CONTRACCION_VENTRICULAR_PREMATURA en el ciclo: " + $intervaloQRS.getCiclo());	
-end
-
-
-
-
-rule "Detectar Contracción Ventricular Prematura"
-when
-    $r: Resultado (ritmoCardiaco > 0 && !enfermedad.contains(Enfermedades.CONTRACCION_VENTRICULAR_PREMATURA))
-    $intervaloQRS: Intervalo(tipo == "QRS", $ciclo: ciclo, $valorQRS: duracion)
-    $intervaloRR: Intervalo(tipo == "RR", ciclo == $ciclo, $valorRR: duracion)
-    eval($valorQRS > 120 && $valorRR < 500)
-then
-    modify ($r) {
-        addEnfermedad(Enfermedades.CONTRACCION_VENTRICULAR_PREMATURA);
-    }
-    System.out.println("Detectada posible CONTRACCION_VENTRICULAR_PREMATURA en el ciclo: " + $ciclo);	
-end
-
-*/

@@ -39,21 +39,13 @@ public class Main {
 			
 			
 			//CREAR OBJETOS NECESARIOS PARA ANÁLISIS
-			//general
 			Resultado resultado = new Resultado();
-			
-			//hipocalcemia
 			Intervalo intervalo = new Intervalo();
-			
-			
 
-			
 			//FILTRAMOS SEGMENTOS
 			ContadorCiclos contCiclos = new ContadorCiclos();
 			
 
-			
-			
 			// Conectar con Drools
 	        KieServices ks = KieServices.Factory.get(); //inicia servicio drools
 	        KieContainer kContainer = ks.getKieClasspathContainer(); //carga config de kmodule.xml
