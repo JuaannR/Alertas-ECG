@@ -16,6 +16,7 @@ local.properties
 .project
 EstándaresDiagnóstico.txt
 ~$forme_3.docx
+*.docx
 
 # External tool builders
 .externalToolBuilders/

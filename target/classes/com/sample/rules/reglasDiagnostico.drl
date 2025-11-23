@@ -70,7 +70,7 @@ rule "Calcular ritmoCardiaco"
 		ondas.sort(Comparator.comparing(onda -> onda.getInicio()));
 		
 
-		int resto = ondas.size() % 4;
+		int resto = ondas.size() % 5;
 		
 		if (resto != 0) {
     		for(int i = 0; i < resto; i++) {
@@ -200,12 +200,11 @@ rule "Detectar Hipopotasemia"
             addEnfermedad(Enfermedades.HIPOPOTASEMIA);
             }
     System.out.println("Detectada posible Hipopotasemia en el ciclo: " + $ondaT.getCiclo());
-    System.out.println("Se cumplen las 3 condiciones para la deteccion de la enfermedad: ");
     System.out.println(" - Pico de la Onda T inferior a -10: " + $ondaT.getPico());
     System.out.println(" - Pico de la Onda T menor que pico de la Onda S: " + $ondaT.getPico() + " < " + $ondaS.getPico());
     System.out.println(" - Pico de la Onda T (en valor absoluto) mucho mayor al pico de la Onda R. Onda T: " + Math.abs($ondaT.getPico()) + "; " +
     																		"Onda R: " + $ondaR.getPico() + "; " +
-    																		"Division: " + Math.abs($picoT / $picoR));
+    																		"Division: " + Math.abs($picoT / $picoR) + " (>1)");
 end
 
 
@@ -219,9 +218,9 @@ rule "Detectar Isquemia Coronaria"
         modify ($r) {
                 addEnfermedad(Enfermedades.ISQUEMIA_CORONARIA);
                 }
-        System.out.println("Detectada posible ISQUEMIA_CORONARIA en el ciclo: " + $ciclo);
-        System.out.println("Diferencia entre pico de T y S menor o igual a '-5 mV': " + ($ondaT.getPico() - $ondaS.getPico()));
-        System.out.println("Pico de la onda T menor a '-10 mv': " + $ondaT.getPico() + " mV");
+        System.out.println("Detectada posible Isquemia Coronaria en el ciclo: " + $ciclo);
+        System.out.println(" - Diferencia entre pico de T y S menor o igual a '-5 mV': " + ($ondaT.getPico() - $ondaS.getPico()) + " mV");
+        System.out.println(" - Pico de la onda T menor a '-10 mv': " + $ondaT.getPico() + " mV");
 end
 
 
@@ -239,11 +238,11 @@ rule "Detectar Infarto Agudo de Miocardio"
         modify ($r) {
                 addEnfermedad(Enfermedades.INFARTO_AGUDO_DE_MIOCARDIO);
                 }
-        System.out.println("Detectada posible INFARTO_AGUDO_DE_MIOCARDIO en el ciclo: " + $ciclo);
+        System.out.println("Detectada posible Infarto Agudo de Miocardio en el ciclo: " + $ciclo);
         
         if (($picoT + $picoS) >= 0.2 && ($picoR > 1.0)) {
-        	System.out.println(" - Suma de pico Onda T y pico Onda S mayor o igual a 0.2: " + ($picoT + $picoS) +
-        	 " mV; Pico de onda R superior a 1: " + $ondaR.getPico() + " mV");
+        	System.out.println(" - Suma de pico Onda T y pico Onda S mayor o igual a 0.2: " + ($picoT + $picoS) + " mV");
+        	System.out.println(" - Pico de onda R superior a 1: " + $ondaR.getPico() + " mV");
         }
         
         if (($picoQ < -0.1 && $duracion >= 40 && (Math.abs($picoQ) / $picoR) >= 0.25)) {
@@ -281,9 +280,9 @@ then
     modify ($r) {
         addEnfermedad(Enfermedades.CONTRACCION_VENTRICULAR_PREMATURA);
     }
-    System.out.println("Detectada CONTRACCION_VENTRICULAR_PREMATURA en ciclo " + $ciclo);
-    System.out.println("Duracion del complejo QRS menor o igual a 70ms: " + $intervaloQRS.getDuracion() + "ms");
-    System.out.println("Duracion del intervalo RR en el rango 600-700ms: " + $intervaloRR.getDuracion() + "ms");
+    System.out.println("Detectada Contraccion Ventricular Prematura en ciclo " + $ciclo);
+    System.out.println(" - Duracion del complejo QRS menor o igual a 70ms: " + $intervaloQRS.getDuracion() + "ms");
+    System.out.println(" - Duracion del intervalo RR en el rango 600-700ms: " + $intervaloRR.getDuracion() + "ms");
 end
 
 
