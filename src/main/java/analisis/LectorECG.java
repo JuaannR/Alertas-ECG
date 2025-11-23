@@ -11,7 +11,7 @@ import java.util.regex.*;
 public class LectorECG {
 
     public static EntradaElectro leerFichero(String rutaFichero) throws IOException {
-        List<Onda> ondas = new ArrayList<>();  //Lista vacia
+        List<Onda> ondas = new ArrayList<>();  
         int cont = 0;
         // Patrón expresion regular
         Pattern pattern = Pattern.compile("([PQRST])\\((\\d+),(\\d+),(-?\\d+\\.?\\d*)\\)");
@@ -27,14 +27,14 @@ public class LectorECG {
                 	}
 
                 Matcher matcher = pattern.matcher(linea); //buscador para linea especifica
-                if (matcher.find()) {  //busca patrones en la linea y asigna valores por grupos
+                if (matcher.find()) {  
                     Tipos_Ondas tipo = Tipos_Ondas.valueOf(matcher.group(1));
                     float inicio = Float.parseFloat(matcher.group(2));
                     float fin = Float.parseFloat(matcher.group(3));
                     float pico = Float.parseFloat(matcher.group(4));
 
-                    Onda o = new Onda(fin, inicio, pico, tipo,cont);  //cada linea pasa a ser una onda
-                    ondas.add(o);								// y se añade a la lista
+                    Onda o = new Onda(fin, inicio, pico, tipo,cont);  
+                    ondas.add(o);								
                     
                 }
             }
@@ -43,6 +43,3 @@ public class LectorECG {
         return new EntradaElectro(ondas);
     }
 }
-
-
-// try with resources -> cierra automaticamente el BufferReader al salir del try y te ahorras el finally

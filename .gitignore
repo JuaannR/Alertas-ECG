@@ -13,6 +13,9 @@ local.properties
 .settings/
 .loadpath
 .recommenders
+.project
+EstándaresDiagnóstico.txt
+~$forme_3.docx
 
 # External tool builders
 .externalToolBuilders/

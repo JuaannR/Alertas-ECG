@@ -1,5 +1,7 @@
 package programa;
 
+import java.util.Scanner;
+
 import org.kie.api.KieServices;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
@@ -14,56 +16,47 @@ import clasesProyecto.Resultado;
 public class Main {
 
 	public static void main(String[] args) {
-		System.out.println("Hello Wordl!");
 		
 		try {
-			//String rutaFichero = "inputs/bradicardia.txt";
-			//String rutaFichero = "inputs/bradicardia2.txt";
-			//String rutaFichero = "inputs/hipocalcemia_hipopotasemia.txt";
-			//String rutaFichero = "inputs/hipocalcemia_iam.txt";
-			//String rutaFichero = "inputs/hipocalcemia_isqcoronaria.txt";
-			//String rutaFichero = "inputs/hipocalcemia.txt";
-			//String rutaFichero = "inputs/hipopotasemia.txt";
-			String rutaFichero = "inputs/iam.txt";
-			//String rutaFichero = "inputs/isq-coronaria.txt";
-			//String rutaFichero = "inputs/normal.txt";
-			//String rutaFichero = "inputs/normal2.txt";
-			//String rutaFichero = "inputs/premat-vent-contr1.txt";
-			//String rutaFichero = "inputs/premat-vent-contr2.txt";
-			//String rutaFichero = "inputs/taquicardia.txt";
-			//String rutaFichero = "inputs/taquicardia2.txt";
+			
+			String inputs = "inputs/";
+			String txt = ".txt";
+			
+			Scanner scanner = new Scanner(System.in);
+			System.out.println("Introduce el nombre del fichero a evaluar: ");
+			
+			String nombreFichero = scanner.nextLine();
+			String rutaFichero = inputs + nombreFichero + txt;
 			
 			// Leer fichero
 			EntradaElectro entrada = LectorECG.leerFichero(rutaFichero);
 			System.out.println("Fichero " + rutaFichero + " leído correctamente. Ondas totales:" + entrada.getListaOndas().size());
+			System.out.println("Iniciando el diagnostico...");
 			
-			
-			//CREAR OBJETOS NECESARIOS PARA ANÁLISIS
+			// Objetos necesarios para análisis
 			Resultado resultado = new Resultado();
 			Intervalo intervalo = new Intervalo();
-
-			//FILTRAMOS SEGMENTOS
 			ContadorCiclos contCiclos = new ContadorCiclos();
 			
 
 			// Conectar con Drools
-	        KieServices ks = KieServices.Factory.get(); //inicia servicio drools
-	        KieContainer kContainer = ks.getKieClasspathContainer(); //carga config de kmodule.xml
-	        KieSession kSession = kContainer.newKieSession("ksession-rules"); //carga sesion trabajo
+	        KieServices ks = KieServices.Factory.get(); 
+	        KieContainer kContainer = ks.getKieClasspathContainer(); 
+	        KieSession kSession = kContainer.newKieSession("ksession-rules"); 
 	        
-	        //INSERTAMOS HECHOS (OBJETOS CREADOS UTILIZADOS PARA DIAGNÓSTICO)
+	        // Inserción de hechos
 	        kSession.insert(resultado); 
 	        kSession.insert(intervalo);
 	        kSession.insert(entrada);
 	        kSession.insert(contCiclos);
 	        
-	        //Metemos en Drools la lista de ondas de EntradaElectro ONDA A ONDA
+	        
 	        for (Onda o : entrada.getListaOndas()) {
 	        	kSession.insert(o);
 	        }
 	        
-	        kSession.fireAllRules(); //lanzar las reglas
-	        kSession.dispose(); //cierra sesion 
+	        kSession.fireAllRules(); 
+	        kSession.dispose(); 
 			
 
 			//Mostrar Resultado
@@ -72,9 +65,10 @@ public class Main {
 	           System.out.println("Número de ciclos: " + resultado.getNumCiclos());
 	           System.out.println("Ritmo Cardiaco: " + resultado.getRitmoCardiaco());
 	           System.out.println("===================================");
-
-	           //System.out.println(segmentoQT.getListaOndasQT());
 	           
+	           
+	           scanner.close();
+          
 	           
 	           
 		} catch (Exception e) {
