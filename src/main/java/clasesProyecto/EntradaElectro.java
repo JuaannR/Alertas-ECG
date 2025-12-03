@@ -15,8 +15,4 @@ public class EntradaElectro {
 	public List<Onda> getListaOndas() {
 		return Collections.unmodifiableList(listaOndas);
 	}
-
-	
-	
-	
 }
